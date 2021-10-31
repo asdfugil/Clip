@@ -1,0 +1,24 @@
+name: Build
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+
+jobs:
+  build:
+   runs-on: macos-latest
+
+   steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: |
+          git submodule update --init --recursive
+          xcodebuild clean build ONLY_ACTIVE_ARCH=NO PRODUCT_BUNDLE_IDENTIFIER='com.rileytestut.Clip.Beta' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED="NO" -sdk iphoneos -scheme Clip -configuration Debug -derivedDataPath build
+          ln -sf build/Build/Products/Debug-iphoneos Payload
+          zip -r9 Clip.ipa Payload/Clip.app
+          
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v2.2.4
+        with:
+         name: Clip.ipa
+         path: "Clip.ipa"
